@@ -1,0 +1,76 @@
+//npr scrape
+private void getNprArticles(ArrayList<Article> articlesList) {
+        Document nprDoc = null;
+        ArrayList<Article> nprArticles = new ArrayList<Article>();
+        // Finds NPR site and scrapes it
+        try {
+            nprDoc = Jsoup.connect("https://www.npr.org/sections/news/").get();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // searches for articles
+        Elements nprHeadlines = nprDoc.getElementsByTag("article");
+
+        //gets link class and headline
+        int count = 1;
+        for(Element e : nprHeadlines){
+            Article nprArticle = new Article(e.getElementsByAttribute("href").attr("href"),"NPR: "+e.getElementsByClass("title").text(),"NPR",e.getElementsByTag("img").attr("src"));
+
+            //Checks for empty article objects and adds to article list if not empty
+            if (!nprArticle.imageLink.isEmpty()){
+                articlesList.add(nprArticle);
+                System.out.println("Null?: "+nprArticle.imageLink);
+            }
+
+        }
+
+    }
+    
+    //post to feed
+    
+    //Creates a button for each articles
+    private void addButton(Article article) {
+        LinearLayout rootLayout = (LinearLayout) findViewById(R.id.rootLayout);
+        // for imageview
+// for horizontal linearlayout
+        LinearLayout linearLayout2 = new LinearLayout(this);
+        linearLayout2.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        linearLayout2.setOrientation(LinearLayout.VERTICAL);
+
+        ImageView newImage = new ImageView(this);
+
+
+        Picasso.with(this).load(article.imageLink).into(newImage);
+
+        TextView newTextView = new TextView(this);
+
+        newTextView.setText(article.storyText);
+        newTextView.setTextColor(Color.parseColor("#000000"));
+
+        linearLayout2.setBackground(getBorder());
+
+        // add 2 textview to horizontal linearlayout
+        linearLayout2.addView(newImage);
+        linearLayout2.addView(newTextView);
+
+        // finally, add imageview and horizontal linearlayout to vertical linearlayout (rootView)
+        rootLayout.addView(linearLayout2);
+
+        linearLayout2.setOnClickListener(view -> {
+            Uri uri = Uri.parse(String.valueOf(article.storyLink));
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        });
+        newImage.getLayoutParams().height = 750;
+        newImage.getLayoutParams().width = 750;
+
+    }
+
+    private Drawable getBorder() {
+        GradientDrawable border = new GradientDrawable();
+        border.setColor(0xEEEDED);
+        //white background
+        border.setStroke(1, 0xFF000000);
+
+        return border;
+    }
